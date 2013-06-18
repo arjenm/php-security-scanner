@@ -10,7 +10,7 @@
 	</encoder>
 </appender>
 
-	<logger name="net.tweakers.phpsecurity.Scanner" level="ERROR" />
+	<logger name="org.arjenm.phpsecurity.Scanner" level="ERROR" />
 
 	<root>
 		<level value="INFO" />
