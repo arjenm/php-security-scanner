@@ -1,4 +1,22 @@
 #################
+## Project stuff
+#################
+
+target/
+
+# sensible location to put the resin.jar file, but we don't want it in git
+resin.jar
+
+
+#################
+## IntelliJ IDEA
+#################
+
+.idea/
+*.iml
+
+
+#################
 ## Eclipse
 #################
 
