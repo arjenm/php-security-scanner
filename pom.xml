@@ -45,7 +45,7 @@
 			<artifactId>resin</artifactId>
 			<version>4.0.36</version>
 			<scope>system</scope>
-			<systemPath>/home/acm/source/php-bug-scanner/resin.jar</systemPath>
+			<systemPath>${basedir}/resin.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
