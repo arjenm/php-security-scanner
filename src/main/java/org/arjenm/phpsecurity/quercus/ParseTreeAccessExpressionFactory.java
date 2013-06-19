@@ -43,7 +43,9 @@ import org.arjenm.phpsecurity.quercus.statement.*;
 import java.util.ArrayList;
 
 /**
- * ExprFactory that creates expressions and statements that allow access to their internals.
+ * ExprFactory that creates Expr(ession)s and Statements that allow access to their internals.
+ *
+ * Other than that, it is exactly like the {@link ExprFactory}.
  *
  * @author Arjen
  */

@@ -32,6 +32,8 @@ import com.caucho.quercus.expr.ExprFactory;
 /**
  * Quercus-variant that allows access to the internals of the PHP-programs.
  *
+ * I.e. its just the normal {@link Quercus} but uses a {@link ParseTreeAccessExpressionFactory} as {@link ExprFactory}.
+ *
  * @author Arjen
  */
 public class ParseTreeAccessQuercus extends Quercus
