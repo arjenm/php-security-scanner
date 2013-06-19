@@ -42,13 +42,14 @@ WARN  ResultCollector - Unmitigated risks for method: mysql_query = [sqlInjectio
 ## USAGE
 
 Normally, it should be simply a matter of calling maven, to download resources and create packages:
+```
 mvn clean dependency:copy-dependencies package
+```
 
 Note: since Caucho has no Maven repository for the latest Resin or Quercus (4.0.36 or higher), you'll have to download that yourself:
 [http://www.caucho.com/download/](http://www.caucho.com/download/)
 
-Just download the resin open source servlet container, extract the tarball or zipfile and find the resin.jar in it. Adjust the pom.xml-file so it has a absolute path to
- your resin.jar.
+Just download the resin open source servlet container, extract the tarball or zipfile and find the resin.jar in it. Either copy it to your basedir or adjust the pom.xml-file so it has a absolute path to your resin.jar.
 
 After that you can just use the above mvn-command.
 
