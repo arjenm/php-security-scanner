@@ -6,6 +6,8 @@ target/
 
 # sensible location to put the resin.jar file, but we don't want it in git
 resin.jar
+# Also don't add properties-files from the root, this allows you to test various configurations without committing them.
+*.properties
 
 
 #################

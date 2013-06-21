@@ -29,6 +29,7 @@ package org.arjenm.phpsecurity.cli;
 import com.beust.jcommander.Parameter;
 import org.arjenm.phpsecurity.analyzer.Risk;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -46,6 +47,14 @@ public class ScannerCliParameters
 
 	@Parameter(names = {"-i", "--ignorerisk"}, description = "Select the risks that should be ignored", converter = CliRiskConverter.class)
 	private List<Risk> ignoredRisks;
+
+	@Parameter(names = {"-d", "--dangerousmethods"}, description = "The properties-filename with the dangerous methods. If not specified, the internal default file is used.",
+			converter = FileConverter.class)
+	private File dangerousMethodsPropertiesFile;
+
+	@Parameter(names = {"-m", "--mitigatingmethods"}, description = "The properties-filename with the mitigating methods. If not specified, the internal default file is used.",
+			converter = FileConverter.class)
+	private File mitigatingMethodsPropertiesFile;
 
 	@Parameter(description = "[One or more paths to files or directories to scan]", required = true)
 	private List<String> paths;
@@ -70,14 +79,24 @@ public class ScannerCliParameters
 		this.ignoredRisks = ignoredRisks;
 	}
 
-	public List<String> getPaths()
+	public File getDangerousMethodsPropertiesFile()
 	{
-		return paths;
+		return dangerousMethodsPropertiesFile;
 	}
 
-	public void setPaths(List<String> paths)
+	public void setDangerousMethodsPropertiesFile(File dangerousMethodsPropertiesFile)
 	{
-		this.paths = paths;
+		this.dangerousMethodsPropertiesFile = dangerousMethodsPropertiesFile;
+	}
+
+	public File getMitigatingMethodsPropertiesFile()
+	{
+		return mitigatingMethodsPropertiesFile;
+	}
+
+	public void setMitigatingMethodsPropertiesFile(File mitigatingMethodsPropertiesFile)
+	{
+		this.mitigatingMethodsPropertiesFile = mitigatingMethodsPropertiesFile;
 	}
 
 	public String getFileNamePattern()
@@ -88,5 +107,15 @@ public class ScannerCliParameters
 	public void setFileNamePattern(String fileNamePattern)
 	{
 		this.fileNamePattern = fileNamePattern;
+	}
+
+	public List<String> getPaths()
+	{
+		return paths;
+	}
+
+	public void setPaths(List<String> paths)
+	{
+		this.paths = paths;
 	}
 }

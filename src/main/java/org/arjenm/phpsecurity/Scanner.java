@@ -43,7 +43,10 @@ import org.arjenm.phpsecurity.quercus.ParseTreeAccessQuercus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.EnumSet;
 import java.util.Properties;
@@ -95,7 +98,7 @@ public class Scanner
 
 		// And actually start the scanning
 		Pattern fileNamePattern = Pattern.compile(parameters.getFileNamePattern());
-		MethodInformation methodInformation = loadMethodInformation();
+		MethodInformation methodInformation = loadMethodInformation(parameters.getDangerousMethodsPropertiesFile(), parameters.getMitigatingMethodsPropertiesFile());
 		ResultCollector resultCollector = new ResultCollector(interestedRisks, methodInformation);
 
 		Scanner scanner = new Scanner(fileNamePattern, resultCollector);
@@ -109,15 +112,32 @@ public class Scanner
 		}
 	}
 
-	private static MethodInformation loadMethodInformation() throws IOException
+	private static MethodInformation loadMethodInformation(File dangerousMethodsPropertiesFile, File mitigatingMethodsPropertiesFile) throws IOException
 	{
-		Properties dangerousMethods = new Properties();
-		dangerousMethods.load(Scanner.class.getResourceAsStream("/dangerousMethods.properties"));
-
-		Properties mitigatingMethods = new Properties();
-		mitigatingMethods.load(Scanner.class.getResourceAsStream("/mitigatingMethods.properties"));
+		Properties dangerousMethods = getProperties(dangerousMethodsPropertiesFile, "/dangerousMethods.properties");
+		Properties mitigatingMethods = getProperties(mitigatingMethodsPropertiesFile, "/mitigatingMethods.properties");
 
 		return MethodInformation.create(dangerousMethods, mitigatingMethods);
+	}
+
+	private static Properties getProperties(File propertiesFile, String internalAlternativeName) throws IOException
+	{
+		InputStream propertiesStream;
+		if(propertiesFile != null && propertiesFile.exists())
+		{
+			log.info("Loading properties from: " + propertiesFile);
+			propertiesStream = new FileInputStream(propertiesFile);
+		}
+		else
+		{
+			log.debug("Falling back to internal properties file: " + internalAlternativeName);
+			propertiesStream = Scanner.class.getResourceAsStream(internalAlternativeName);
+		}
+
+		Properties properties = new Properties();
+		properties.load(propertiesStream);
+
+		return properties;
 	}
 
 	private Pattern fileNamePattern;
