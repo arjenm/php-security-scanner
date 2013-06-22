@@ -24,27 +24,21 @@
  * @author Arjen van der Meijden
  */
 
-package org.arjenm.phpsecurity.cli;
-
-import com.beust.jcommander.IStringConverter;
-
-import java.io.File;
+package org.arjenm.phpsecurity.analyzer.declaration;
 
 /**
- * Convert input-strings to files.
+ * Enumeration of various declaration types.
  *
  * @author Arjen
  */
-public class FileConverter implements IStringConverter<File>
+public enum DeclarationType
 {
-	@Override
-	public File convert(String s)
-	{
-		File returnFile = new File(s);
-
-		if(!returnFile.exists())
-			throw new IllegalArgumentException("File does not exist: " + returnFile.getAbsolutePath());
-
-		return returnFile;
-	}
+	CLASS,
+	FUNCTION,
+	CLASS_METHOD,
+	STATIC_CLASS_METHOD,
+	CLASS_CONSTANT,
+	PUBLIC_CLASS_PROPERTY,
+	PUBLIC_STATIC_CLASS_PROPERTY,
+	CONSTANT,
 }

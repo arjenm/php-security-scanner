@@ -30,6 +30,7 @@ package org.arjenm.phpsecurity.analyzer;
 import com.caucho.quercus.Location;
 import com.caucho.quercus.env.StringValue;
 import com.caucho.quercus.expr.*;
+import org.arjenm.phpsecurity.analyzer.declaration.DeclarationUsageCollector;
 import org.arjenm.phpsecurity.quercus.expr.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,13 +54,15 @@ public class ExpressionAnalyzer
 	private Map<String, AnalysisResult> variableResults = new HashMap<>();
 
 	private ResultCollector resultCollector;
+	private DeclarationUsageCollector declarationUsageCollector;
 	private ProgramAnalyzer programAnalyzer;
 
 	private Location lastKnownValidLocation;
 
-	public ExpressionAnalyzer(ResultCollector resultCollector, ProgramAnalyzer programAnalyzer)
+	public ExpressionAnalyzer(ResultCollector resultCollector, DeclarationUsageCollector declarationUsageCollector, ProgramAnalyzer programAnalyzer)
 	{
 		this.resultCollector = resultCollector;
+		this.declarationUsageCollector = declarationUsageCollector;
 		this.programAnalyzer = programAnalyzer;
 	}
 
@@ -142,8 +145,8 @@ public class ExpressionAnalyzer
 			return analyzeUnaryPlusExpr((UnaryPlusExpr) expression);
 		else if(expression instanceof UnaryRefExpr)
 			return analyzeUnaryRefExpr((UnaryRefExpr) expression);
-		else if(expression instanceof ClassConstExpr)
-			return analyzeClassConstExpr((ClassConstExpr) expression);
+		else if(expression instanceof PTAClassConstExpr)
+			return analyzeClassConstExpr((PTAClassConstExpr) expression);
 		else if(expression instanceof PTAConditionalExpr)
 			return analyzeConditionalExpr((PTAConditionalExpr) expression);
 		else if(expression instanceof PTAConditionalShortExpr)
@@ -249,6 +252,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassVirtualConstExpr(ClassVirtualConstExpr classVirtualConstExpr)
 	{
+		declarationUsageCollector.addUsage(classVirtualConstExpr);
+
 		// TODO: Analyze var?
 		// class::constname stuff is generally a constant or similar
 		return AnalysisResult.noRisks(classVirtualConstExpr);
@@ -270,6 +275,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassVarConstExpr(PTAClassVarConstExpr classVarConstExpr)
 	{
+		declarationUsageCollector.addUsage(classVarConstExpr);
+
 		Expr name = classVarConstExpr.getClassName();
 		analyzeExpression(name);
 
@@ -288,6 +295,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassVarFieldExpr(PTAClassVarFieldExpr classVarFieldExpr)
 	{
+		declarationUsageCollector.addUsage(classVarFieldExpr);
+
 		Expr className = classVarFieldExpr.getClassName();
 		analyzeExpression(className);
 
@@ -297,6 +306,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeObjectFieldExpr(PTAObjectFieldExpr objectFieldExpr)
 	{
+		declarationUsageCollector.addUsage(objectFieldExpr);
+
 		// TODO: Analyze variable content?
 		Expr name = objectFieldExpr.getObjExpr();
 		analyzeExpression(name);
@@ -408,6 +419,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeBinaryInstanceOfExpr(BinaryInstanceOfExpr binaryInstanceOfExpr)
 	{
+		declarationUsageCollector.addUsage(binaryInstanceOfExpr);
+
 		analyzeExpression(binaryInstanceOfExpr.getExpr());
 
 		// $a instanceof Class Turns it in a boolean
@@ -497,12 +510,16 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeConstExpr(ConstExpr constExpr)
 	{
+		declarationUsageCollector.addUsage(constExpr);
+
 		// Constants are generally save to use
 		return AnalysisResult.noRisks(constExpr);
 	}
 
-	protected AnalysisResult analyzeClassConstExpr(ClassConstExpr constExpr)
+	protected AnalysisResult analyzeClassConstExpr(PTAClassConstExpr constExpr)
 	{
+		declarationUsageCollector.addUsage(constExpr);
+
 		// Class-constants are generally save to use
 		return AnalysisResult.noRisks(constExpr);
 	}
@@ -573,6 +590,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeObjectNewExpr(PTAObjectNewExpr objectNewExpr)
 	{
+		declarationUsageCollector.addUsage(objectNewExpr);
+
 		Expr[] arguments = objectNewExpr.getArgs();
 
 		// TODO: Are there object constructors with dangerous parameters?
@@ -624,7 +643,7 @@ public class ExpressionAnalyzer
 	protected AnalysisResult analyzeArrayGetExpr(ArrayGetExpr arrayGetExpr)
 	{
 		// TODO: Look up whether its actually dangerous or not (see analyzeBinaryAssignExpr) using the index?
-		// TODO: Check for _GET, _POST etc
+		// TODO: Check for _GET, _POST etc?
 
 		analyzeExpression(arrayGetExpr.getExpr());
 
@@ -705,6 +724,11 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeObjectMethodExpr(PTAObjectMethodExpr objectMethodExpr)
 	{
+		declarationUsageCollector.addUsage(objectMethodExpr);
+
+		Expr objectExpression = objectMethodExpr.getObjExpr();
+		analyzeExpression(objectExpression);
+
 		Expr[] arguments = objectMethodExpr.getArgs();
 
 		// See if the object's method-call is potentially dangerous
@@ -728,6 +752,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassMethodExpr(PTAClassMethodExpr classMethodExpr)
 	{
+		declarationUsageCollector.addUsage(classMethodExpr);
+
 		StringValue methodName = classMethodExpr.getMethodName();
 		Expr[] arguments = classMethodExpr.getArgs();
 
@@ -737,6 +763,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassConstructExpr(PTAClassConstructExpr classConstructExpr)
 	{
+		declarationUsageCollector.addUsage(classConstructExpr);
+
 		Expr[] arguments = classConstructExpr.getArgs();
 
 		// Class::__construct explictly called
@@ -748,18 +776,18 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeCallExpr(PTACallExpr callExpr)
 	{
+		declarationUsageCollector.addUsage(callExpr);
+
 		Expr[] arguments = callExpr.getArgs();
 
-		// Use the non-namespace prefixed methodname (i.e. nsName), otherwise any global function will not match due to the default
-		// prefixed namespace-name
-		StringValue name = callExpr.getNsName() != null ? callExpr.getNsName() : callExpr.getName();
-
 		// Normal function-call, see if we know anything about it
-		return analyzeMethodArguments(callExpr, name.toString(), arguments);
+		return analyzeMethodArguments(callExpr, callExpr.getSimpleMethodName(), arguments);
 	}
 
 	protected AnalysisResult analyzeThisMethodExpr(PTAThisMethodExpr thisMethodExpr)
 	{
+		declarationUsageCollector.addUsage(thisMethodExpr);
+
 		Expr[] arguments = thisMethodExpr.getArgs();
 
 		// $this->method, see if we know anything about it
@@ -804,6 +832,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassVirtualMethodExpr(PTAClassVirtualMethodExpr classVirtualMethodExpr)
 	{
+		declarationUsageCollector.addUsage(classVirtualMethodExpr);
+
 		Expr[] arguments = classVirtualMethodExpr.getArgs();
 
 		// ClassName::method, see if we know anything about it
@@ -822,6 +852,8 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeClassVarMethodExpr(PTAClassVarMethodExpr classVarMethodExpr)
 	{
+		declarationUsageCollector.addUsage(classVarMethodExpr);
+
 		Expr name = classVarMethodExpr.getClassName();
 		Expr[] arguments = classVarMethodExpr.getArgs();
 

@@ -54,4 +54,16 @@ public class PTACallExpr extends CallExpr
 	{
 		return _args;
 	}
+
+	/**
+	 * Get the non-namespaced name.
+	 *
+	 * @return
+	 */
+	public String getSimpleMethodName()
+	{
+		StringValue name = getNsName() != null ? getNsName() : getName();
+
+		return name.toString();
+	}
 }

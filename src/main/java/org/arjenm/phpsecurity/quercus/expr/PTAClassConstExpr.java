@@ -24,27 +24,31 @@
  * @author Arjen van der Meijden
  */
 
-package org.arjenm.phpsecurity.cli;
+package org.arjenm.phpsecurity.quercus.expr;
 
-import com.beust.jcommander.IStringConverter;
+import com.caucho.quercus.Location;
+import com.caucho.quercus.env.StringValue;
+import com.caucho.quercus.expr.ClassConstExpr;
 
-import java.io.File;
-
-/**
- * Convert input-strings to files.
- *
- * @author Arjen
- */
-public class FileConverter implements IStringConverter<File>
+public class PTAClassConstExpr extends ClassConstExpr
 {
-	@Override
-	public File convert(String s)
+	public PTAClassConstExpr(Location location, String className, StringValue name)
 	{
-		File returnFile = new File(s);
+		super(location, className, name);
+	}
 
-		if(!returnFile.exists())
-			throw new IllegalArgumentException("File does not exist: " + returnFile.getAbsolutePath());
+	public PTAClassConstExpr(String className, StringValue name)
+	{
+		super(className, name);
+	}
 
-		return returnFile;
+	public String getClassName()
+	{
+		return _className;
+	}
+
+	public StringValue getName()
+	{
+		return _name;
 	}
 }

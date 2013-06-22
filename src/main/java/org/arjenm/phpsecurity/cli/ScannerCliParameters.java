@@ -56,6 +56,9 @@ public class ScannerCliParameters
 			converter = FileConverter.class)
 	private File mitigatingMethodsPropertiesFile;
 
+	@Parameter(names = {"-u", "--displayunuseddeclarations"}, description = "Display unused declarations for this path, can be supplied multiple times.")
+	private List<String> unusedDeclarationPaths;
+
 	@Parameter(description = "[One or more paths to files or directories to scan]", required = true)
 	private List<String> paths;
 
@@ -107,6 +110,16 @@ public class ScannerCliParameters
 	public void setFileNamePattern(String fileNamePattern)
 	{
 		this.fileNamePattern = fileNamePattern;
+	}
+
+	public List<String> getUnusedDeclarationPaths()
+	{
+		return unusedDeclarationPaths;
+	}
+
+	public void setUnusedDeclarationPaths(List<String> unusedDeclarationPaths)
+	{
+		this.unusedDeclarationPaths = unusedDeclarationPaths;
 	}
 
 	public List<String> getPaths()

@@ -24,27 +24,35 @@
  * @author Arjen van der Meijden
  */
 
-package org.arjenm.phpsecurity.cli;
-
-import com.beust.jcommander.IStringConverter;
-
-import java.io.File;
+package org.arjenm.phpsecurity.analyzer.declaration;
 
 /**
- * Convert input-strings to files.
+ * Container of usage information about a declaration.
  *
  * @author Arjen
  */
-public class FileConverter implements IStringConverter<File>
+public class DeclarationUsage
 {
-	@Override
-	public File convert(String s)
+	private final String declaredName;
+	private int usageCount;
+
+	public DeclarationUsage(String declaredName)
 	{
-		File returnFile = new File(s);
+		this.declaredName = declaredName;
+	}
 
-		if(!returnFile.exists())
-			throw new IllegalArgumentException("File does not exist: " + returnFile.getAbsolutePath());
+	public String getDeclaredName()
+	{
+		return declaredName;
+	}
 
-		return returnFile;
+	public void incrementUsageCount()
+	{
+		usageCount++;
+	}
+
+	public int getUsageCount()
+	{
+		return usageCount;
 	}
 }

@@ -38,6 +38,7 @@ import org.arjenm.phpsecurity.analyzer.MethodInformation;
 import org.arjenm.phpsecurity.analyzer.ProgramAnalyzer;
 import org.arjenm.phpsecurity.analyzer.ResultCollector;
 import org.arjenm.phpsecurity.analyzer.Risk;
+import org.arjenm.phpsecurity.analyzer.declaration.DeclarationUsageCollector;
 import org.arjenm.phpsecurity.cli.ScannerCliParameters;
 import org.arjenm.phpsecurity.quercus.ParseTreeAccessQuercus;
 import org.slf4j.Logger;
@@ -99,9 +100,11 @@ public class Scanner
 		// And actually start the scanning
 		Pattern fileNamePattern = Pattern.compile(parameters.getFileNamePattern());
 		MethodInformation methodInformation = loadMethodInformation(parameters.getDangerousMethodsPropertiesFile(), parameters.getMitigatingMethodsPropertiesFile());
-		ResultCollector resultCollector = new ResultCollector(interestedRisks, methodInformation);
 
-		Scanner scanner = new Scanner(fileNamePattern, resultCollector);
+		ResultCollector resultCollector = new ResultCollector(interestedRisks, methodInformation);
+		DeclarationUsageCollector declarationUsageCollector = new DeclarationUsageCollector(parameters.getUnusedDeclarationPaths());
+
+		Scanner scanner = new Scanner(fileNamePattern, resultCollector, declarationUsageCollector);
 
 		log.info("Scanning " + parameters.getPaths() + " for risks: " + interestedRisks);
 
@@ -110,6 +113,8 @@ public class Scanner
 			FilePath filePath = new FilePath(pathName);
 			scanner.analyzeFile(filePath);
 		}
+
+		declarationUsageCollector.analyzeUsage();
 	}
 
 	private static MethodInformation loadMethodInformation(File dangerousMethodsPropertiesFile, File mitigatingMethodsPropertiesFile) throws IOException
@@ -142,11 +147,13 @@ public class Scanner
 
 	private Pattern fileNamePattern;
 	private ResultCollector resultCollector;
+	private DeclarationUsageCollector declarationUsageCollector;
 
-	public Scanner(Pattern fileNamePattern, ResultCollector resultCollector)
+	public Scanner(Pattern fileNamePattern, ResultCollector resultCollector, DeclarationUsageCollector declarationUsageCollector)
 	{
 		this.fileNamePattern = fileNamePattern;
 		this.resultCollector = resultCollector;
+		this.declarationUsageCollector = declarationUsageCollector;
 	}
 
 	/**
@@ -226,7 +233,7 @@ public class Scanner
 		QuercusProgram program = (QuercusProgram) programField.get(page);
 
 		// And actually analyze that program-representation for potential problems
-		ProgramAnalyzer programAnalyzer = new ProgramAnalyzer(resultCollector);
+		ProgramAnalyzer programAnalyzer = new ProgramAnalyzer(resultCollector, declarationUsageCollector);
 		programAnalyzer.analyzeProgram(program);
 
 		// Make sure we close the quercus instance, so it can close its threads and clean up its data-structures

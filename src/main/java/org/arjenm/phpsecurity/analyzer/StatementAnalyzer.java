@@ -28,6 +28,7 @@ package org.arjenm.phpsecurity.analyzer;
 
 import com.caucho.quercus.expr.Expr;
 import com.caucho.quercus.statement.*;
+import org.arjenm.phpsecurity.analyzer.declaration.DeclarationUsageCollector;
 import org.arjenm.phpsecurity.quercus.statement.*;
 
 import java.util.List;
@@ -40,18 +41,27 @@ import java.util.List;
 public class StatementAnalyzer
 {
 	public static final String FUNCTION_ECHO = "echo";
+
 	private ResultCollector resultCollector;
+	private DeclarationUsageCollector declarationUsageCollector;
 	private ProgramAnalyzer programAnalyzer;
 	private ExpressionAnalyzer expressionAnalyzer;
 
-	public StatementAnalyzer(ResultCollector resultCollector, ProgramAnalyzer programAnalyzer)
+	public StatementAnalyzer(ResultCollector resultCollector, DeclarationUsageCollector declarationUsageCollector, ProgramAnalyzer programAnalyzer)
 	{
 		this.resultCollector = resultCollector;
+		this.declarationUsageCollector = declarationUsageCollector;
 		this.programAnalyzer = programAnalyzer;
 
-		this.expressionAnalyzer = new ExpressionAnalyzer(resultCollector, programAnalyzer);
+		this.expressionAnalyzer = new ExpressionAnalyzer(resultCollector, this.declarationUsageCollector, programAnalyzer);
 	}
 
+	/**
+	 * Base entry-point to analyze a {@link Statement}.
+	 *
+	 * @param statement The statement.
+	 * @return The result of the analysis.
+	 */
 	public AnalysisResult analyzeStatement(Statement statement)
 	{
 		if(statement instanceof BlockStatement)
@@ -120,6 +130,8 @@ public class StatementAnalyzer
 
 	protected AnalysisResult analyzeClassStaticStatement(PTAClassStaticStatement classStaticStatement)
 	{
+		declarationUsageCollector.addDeclaration(classStaticStatement);
+
 		// Static class variable declaration/initialization
 		// TODO: Mark the variable's outcome?
 		Expr initValue = classStaticStatement.getInitValue();

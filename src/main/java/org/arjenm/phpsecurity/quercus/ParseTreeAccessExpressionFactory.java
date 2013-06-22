@@ -351,6 +351,12 @@ public class ParseTreeAccessExpressionFactory extends ExprFactory
 	}
 
 	@Override
+	public ClassConstExpr createClassConst(String className, StringValue name)
+	{
+		return new PTAClassConstExpr(className, name);
+	}
+
+	@Override
 	public Expr createClassField(Expr className, StringValue name)
 	{
 		return new PTAClassVarFieldExpr(className, name);
