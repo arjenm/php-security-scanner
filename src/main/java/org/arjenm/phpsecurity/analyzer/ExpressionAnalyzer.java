@@ -213,6 +213,8 @@ public class ExpressionAnalyzer
 			return analyzeConstFileExpr((ConstFileExpr) expression);
 		else if(expression instanceof ConstDirExpr)
 			return analyzeConstDirExpr((ConstDirExpr) expression);
+		else if(expression instanceof ConstClassExpr)
+			return analyzeConstClassExpr((ConstClassExpr) expression);
 		else if(expression instanceof VarVarExpr)
 			return analyzeVarVarExpr((VarVarExpr) expression);
 		else if(expression instanceof PTAClassMethodVarExpr)
@@ -250,6 +252,12 @@ public class ExpressionAnalyzer
 	{
 		// __DIR__ is generally safe
 		return AnalysisResult.noRisks(constDirExpr);
+	}
+
+	protected AnalysisResult analyzeConstClassExpr(ConstClassExpr constClassExpr)
+	{
+		// __CLASS__ is generally safe
+		return AnalysisResult.noRisks(constClassExpr);
 	}
 
 	protected AnalysisResult analyzeConstFileExpr(ConstFileExpr constFileExpr)
