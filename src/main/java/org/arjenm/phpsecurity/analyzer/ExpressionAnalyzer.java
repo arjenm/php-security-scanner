@@ -72,6 +72,21 @@ public class ExpressionAnalyzer
 		if(!expression.getLocation().isUnknown())
 			lastKnownValidLocation = expression.getLocation();
 
+		/*
+		 * TODO:
+		 * ClassVarNameConstExpr
+		 * FunEachExpr
+		 * ClassConstructorExpr
+		 * ParamDefaultExpr
+		 * ParamRequiredExpr
+		 * ClassVarNameVirtualConstExpr
+		 * ClassVarVarConstExpr
+		 * ClassVarFieldVarExpr
+		 * ClassVirtualFieldVarExpr
+		 * ClassVirtualMethodVarExpr
+		 *
+		 */
+
 		// Unfortunately there are a few different types of expressions and this is about as good as any other method to dispatch the correct method :/
 		if(expression instanceof PTABinaryAssignExpr)
 			return analyzeBinaryAssignExpr((PTABinaryAssignExpr) expression);
@@ -123,6 +138,8 @@ public class ExpressionAnalyzer
 			return analyzeCallExpr((PTACallExpr) expression);
 		else if(expression instanceof BinaryAddExpr)
 			return analyzeBinaryAddExpr((BinaryAddExpr) expression);
+		else if(expression instanceof BinaryCommaExpr)
+			return analyzeBinaryCommaExpr((BinaryCommaExpr) expression);
 		else if(expression instanceof AbstractBinaryExpr)
 			return analyzeAbstractBinaryExpr((AbstractBinaryExpr)expression); // After BinaryAdd
 		else if(expression instanceof FunIssetExpr)
@@ -496,10 +513,17 @@ public class ExpressionAnalyzer
 		return result;
 	}
 
+	protected AnalysisResult analyzeBinaryCommaExpr(BinaryCommaExpr binaryCommaExpr)
+	{
+		AnalysisResult result = analyzeExpression(binaryCommaExpr.getLeft());
+		analyzeExpression(binaryCommaExpr.getRight());
+
+		// BinaryCommaExpr returns the first value, so also return that thing's result.
+		return result;
+	}
+
 	protected AnalysisResult analyzeAbstractBinaryExpr(AbstractBinaryExpr binaryExpr)
 	{
-		// TODO: BinaryCommaExpr may be different, like Add
-
 		analyzeExpression(binaryExpr.getLeft());
 		analyzeExpression(binaryExpr.getRight());
 
