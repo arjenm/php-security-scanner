@@ -5,7 +5,6 @@ The php-bug-scanner is a relatively simple set of classes that leverages Caucho'
 
 I.e. it can scan for classic sql injection, cross site scripting and similar vulnerabilities which are of this structure:
 ```php
-<?php
 mysql_query("SELECT * FROM table WHERE a = '" . $potentialInjection . "' AND b = '" . $noInjection . "'");
 ```
 
@@ -13,7 +12,6 @@ In such a statement, its uses the parse-tree of Quercus to be able to trace back
 if we make the program a little more complete, it could be something like this:
 
 ```php
-<?php
 $potentialInjection = $_GET['forgotToQuote'];
 mysql_query("SELECT * FROM table1 WHERE a = '" . $potentialInjection . "'");
 
@@ -72,6 +70,16 @@ The risks to ignore (and for usage in  can be found in Risk.java, but currently 
 sqlInjection, crossSiteScripting, programExecution
 
 You can adjust the selection of dangerous and mitigating methods by simply changing dangerousMethods.properties or mitigatingMethods.properties in the src/main/resources-directory.
+
+## UNUSED DECLARATIONS ANALYSIS
+The parser/scanner can also find declarations of classes, methods and functions that are unused in your code.
+Just add a -u parameter with the path it should gather declaration-information besides the normal parameters.
+
+The list of unused declarations is not perfect in the sense that PHP allows many constructs with a variable declaration, where either
+the class, method or both are variable. I.e. it will not understand these kinds of constructions:
+- $var->{$functionName}()
+- new $var;
+- $className::{$functionName}()
 
 ## DRAWBACKS AND LIMITATIONS
 
