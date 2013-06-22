@@ -215,10 +215,10 @@ public class ExpressionAnalyzer
 			return analyzeConstDirExpr((ConstDirExpr) expression);
 		else if(expression instanceof VarVarExpr)
 			return analyzeVarVarExpr((VarVarExpr) expression);
-		else if(expression instanceof ClassMethodVarExpr)
-			return analyzeClassMethodVarExpr((ClassMethodVarExpr) expression);
-		else if(expression instanceof ClassVarMethodVarExpr)
-			return analyzeClassVarMethodVarExpr((ClassVarMethodVarExpr) expression);
+		else if(expression instanceof PTAClassMethodVarExpr)
+			return analyzeClassMethodVarExpr((PTAClassMethodVarExpr) expression);
+		else if(expression instanceof PTAClassVarMethodVarExpr)
+			return analyzeClassVarMethodVarExpr((PTAClassVarMethodVarExpr) expression);
 		else if(expression instanceof LiteralLongExpr)
 			return analyzeLiteralLongExpr((LiteralLongExpr) expression);
 		else if(expression instanceof ArrayTailExpr)
@@ -518,8 +518,12 @@ public class ExpressionAnalyzer
 
 	protected AnalysisResult analyzeArrayTailExpr(ArrayTailExpr arrayTailExpr)
 	{
-		// an $array[] expression can be considered safe
-		return AnalysisResult.noRisks(arrayTailExpr);
+		// Analyze the "array"-part of the array-tail expression
+		analyzeExpression(arrayTailExpr.getExpr());
+
+		// TODO: Analyze the stored expression?
+		// Arrays are considered too complicated, so don't trust it here as well
+		return AnalysisResult.unsafeInput(arrayTailExpr);
 	}
 
 	protected AnalysisResult analyzeConstExpr(ConstExpr constExpr)
@@ -770,17 +774,34 @@ public class ExpressionAnalyzer
 		return AnalysisResult.unsafeInput(objectMethodExpr);
 	}
 
-	protected AnalysisResult analyzeClassMethodVarExpr(ClassMethodVarExpr classMethodVarExpr)
+	protected AnalysisResult analyzeClassMethodVarExpr(PTAClassMethodVarExpr classMethodVarExpr)
 	{
+		declarationUsageCollector.addUsage(classMethodVarExpr);
+
 		log.warn("Found class::$method()-expression: " + classMethodVarExpr + ", at " + getUsefullLocation(classMethodVarExpr));
 
-		// class::$method() expressions are tricky, don't trust it
+		Expr name = classMethodVarExpr.getNameExpr();
+		Expr[] arguments = classMethodVarExpr.getArgs();
+
+		// Somewhat unpredictable like 'class->{$var}()'
+		analyzeExpression(name);
+		analyzeMethodArguments(classMethodVarExpr, "class::$method", arguments);
+
+		// Its too unpredictable, so don't trust its output
 		return AnalysisResult.unsafeInput(classMethodVarExpr);
 	}
 
-	protected AnalysisResult analyzeClassVarMethodVarExpr(ClassVarMethodVarExpr classVarMethodVarExpr)
+	protected AnalysisResult analyzeClassVarMethodVarExpr(PTAClassVarMethodVarExpr classVarMethodVarExpr)
 	{
 		log.warn("Found $class::$method()-expression: " + classVarMethodVarExpr + ", at " + getUsefullLocation(classVarMethodVarExpr));
+
+		Expr classExpr = classVarMethodVarExpr.getClassName();
+		Expr name = classVarMethodVarExpr.getMethodName();
+		Expr[] arguments = classVarMethodVarExpr.getArgs();
+
+		analyzeExpression(classExpr);
+		analyzeExpression(name);
+		analyzeMethodArguments(classVarMethodVarExpr, "$var::$method", arguments);
 
 		// $class::$method() expressions are tricky, don't trust it
 		return AnalysisResult.unsafeInput(classVarMethodVarExpr);

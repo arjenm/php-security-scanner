@@ -87,6 +87,24 @@ public class ParseTreeAccessExpressionFactory extends ExprFactory
 	}
 
 	@Override
+	public Expr createClassMethodCall(Location loc,
+									  String className,
+									  Expr methodName,
+									  ArrayList<Expr> args)
+	{
+		return new PTAClassMethodVarExpr(loc, className, methodName, args);
+	}
+
+	@Override
+	public Expr createClassMethodCall(Location loc,
+									  Expr className,
+									  Expr methodName,
+									  ArrayList<Expr> args)
+	{
+		return new PTAClassVarMethodVarExpr(loc, className, methodName, args);
+	}
+
+	@Override
 	public Expr createClassMethodCall(Location loc, String className, StringValue methodName, ArrayList<Expr> args)
 	{
 		if ("__construct".equals(methodName.toString()))
@@ -324,6 +342,13 @@ public class ParseTreeAccessExpressionFactory extends ExprFactory
 	public Expr createClassMethodCall(Location loc, Expr className, StringValue methodName, ArrayList<Expr> args)
 	{
 		return new PTAClassVarMethodExpr(loc, className, methodName, args);
+	}
+
+	@Override
+	public Statement createVarGlobal(Location loc,
+									 VarVarExpr var)
+	{
+		return new PTAVarGlobalStatement(loc, var);
 	}
 
 	@Override

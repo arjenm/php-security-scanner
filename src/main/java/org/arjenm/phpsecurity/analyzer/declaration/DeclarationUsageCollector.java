@@ -288,6 +288,11 @@ public class DeclarationUsageCollector
 		addUsage(constExpr.getClassName() + CLASS_POSTFIX);
 	}
 
+	public void addUsage(PTAClassMethodVarExpr classMethodVarExpr)
+	{
+		addUsage(classMethodVarExpr.getClassName() + CLASS_POSTFIX);
+	}
+
 	private void addUsage(String declaredName)
 	{
 		String searchName = declaredName.toLowerCase();
