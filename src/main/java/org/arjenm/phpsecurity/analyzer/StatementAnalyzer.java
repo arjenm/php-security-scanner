@@ -92,6 +92,8 @@ public class StatementAnalyzer
 			return analyzeNullStatement((NullStatement) statement);
 		else if(statement instanceof GlobalStatement)
 			return analyzeGlobalStatement((GlobalStatement)statement);
+		else if(statement instanceof VarGlobalStatement)
+			return analyzeVarGlobalStatement((VarGlobalStatement) statement);
 		else if(statement instanceof PTAReturnStatement)
 			return analyzeReturnStatement((PTAReturnStatement) statement);
 		else if(statement instanceof PTAReturnRefStatement)
@@ -324,6 +326,13 @@ public class StatementAnalyzer
 	{
 		// While global is generally a bad idea, its not unsafe on itself. The unknown variables will be marked independently anyway
 		// TODO: Add warning about global?
+		return AnalysisResult.noRisks(null);
+	}
+
+	protected AnalysisResult analyzeVarGlobalStatement(VarGlobalStatement varGlobalStatement)
+	{
+		// While global is generally a bad idea (especially $$global variables), its not unsafe on itself. The unknown variables will be marked independently anyway
+		// TODO: Add warning about global $$var?
 		return AnalysisResult.noRisks(null);
 	}
 }
