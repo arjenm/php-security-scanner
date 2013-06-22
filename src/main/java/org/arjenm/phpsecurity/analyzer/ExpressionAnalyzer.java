@@ -215,6 +215,14 @@ public class ExpressionAnalyzer
 			return analyzeConstDirExpr((ConstDirExpr) expression);
 		else if(expression instanceof VarVarExpr)
 			return analyzeVarVarExpr((VarVarExpr) expression);
+		else if(expression instanceof ClassMethodVarExpr)
+			return analyzeClassMethodVarExpr((ClassMethodVarExpr) expression);
+		else if(expression instanceof ClassVarMethodVarExpr)
+			return analyzeClassVarMethodVarExpr((ClassVarMethodVarExpr) expression);
+		else if(expression instanceof LiteralLongExpr)
+			return analyzeLiteralLongExpr((LiteralLongExpr) expression);
+		else if(expression instanceof ArrayTailExpr)
+			return analyzeArrayTailExpr((ArrayTailExpr) expression);
 
 		throw new IllegalArgumentException("Unknown expression type: " + expression.getClass() + ", at " + expression.getLocation());
 	}
@@ -508,6 +516,12 @@ public class ExpressionAnalyzer
 		return AnalysisResult.unsafeInput(funArrayExpr);
 	}
 
+	protected AnalysisResult analyzeArrayTailExpr(ArrayTailExpr arrayTailExpr)
+	{
+		// an $array[] expression can be considered safe
+		return AnalysisResult.noRisks(arrayTailExpr);
+	}
+
 	protected AnalysisResult analyzeConstExpr(ConstExpr constExpr)
 	{
 		declarationUsageCollector.addUsage(constExpr);
@@ -656,6 +670,12 @@ public class ExpressionAnalyzer
 		return AnalysisResult.noRisks(literalStringExpr);
 	}
 
+	protected AnalysisResult analyzeLiteralLongExpr(LiteralLongExpr literalLongExpr)
+	{
+		// A literal long is generally not very dangerous
+		return AnalysisResult.noRisks(literalLongExpr);
+	}
+
 	protected AnalysisResult analyzeBinaryAppendExpr(BinaryAppendExpr binaryAppendExpr)
 	{
 		// TODO: this one of the most common problem-areas. So if we see user input used directly, we should perhaps add additional warnings?
@@ -748,6 +768,22 @@ public class ExpressionAnalyzer
 
 		// Its too unpredictable, so don't trust its input
 		return AnalysisResult.unsafeInput(objectMethodExpr);
+	}
+
+	protected AnalysisResult analyzeClassMethodVarExpr(ClassMethodVarExpr classMethodVarExpr)
+	{
+		log.warn("Found class::$method()-expression: " + classMethodVarExpr + ", at " + getUsefullLocation(classMethodVarExpr));
+
+		// class::$method() expressions are tricky, don't trust it
+		return AnalysisResult.unsafeInput(classMethodVarExpr);
+	}
+
+	protected AnalysisResult analyzeClassVarMethodVarExpr(ClassVarMethodVarExpr classVarMethodVarExpr)
+	{
+		log.warn("Found $class::$method()-expression: " + classVarMethodVarExpr + ", at " + getUsefullLocation(classVarMethodVarExpr));
+
+		// $class::$method() expressions are tricky, don't trust it
+		return AnalysisResult.unsafeInput(classVarMethodVarExpr);
 	}
 
 	protected AnalysisResult analyzeClassMethodExpr(PTAClassMethodExpr classMethodExpr)
