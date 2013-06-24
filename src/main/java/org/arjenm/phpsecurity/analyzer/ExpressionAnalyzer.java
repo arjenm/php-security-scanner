@@ -74,7 +74,6 @@ public class ExpressionAnalyzer
 
 		/*
 		 * TODO:
-		 * ClassVarNameConstExpr
 		 * FunEachExpr
 		 * ClassConstructorExpr
 		 * ParamDefaultExpr
@@ -208,6 +207,8 @@ public class ExpressionAnalyzer
 			return analyzeClassFieldVarExpr((PTAClassFieldVarExpr) expression);
 		else if(expression instanceof PTAClassVarFieldExpr)
 			return analyzeClassVarFieldExpr((PTAClassVarFieldExpr) expression);
+		else if(expression instanceof PTAClassVarNameConstExpr)
+			return analyzeClassVarNameConstExpr((PTAClassVarNameConstExpr) expression);
 		else if(expression instanceof PTAObjectNewVarExpr)
 			return analyzeObjectNewVarExpr((PTAObjectNewVarExpr) expression);
 		else if(expression instanceof PTACallVarExpr)
@@ -335,6 +336,17 @@ public class ExpressionAnalyzer
 
 		// $className::field is generally not very dangerous?
 		return AnalysisResult.noRisks(classVarFieldExpr);
+	}
+
+	protected AnalysisResult analyzeClassVarNameConstExpr(PTAClassVarNameConstExpr classVarNameConstExpr)
+	{
+		declarationUsageCollector.addUsage(classVarNameConstExpr);
+
+		Expr variableName = classVarNameConstExpr.getName();
+		analyzeExpression(variableName);
+
+		// ClassName::$field is generally not very dangerous?
+		return AnalysisResult.noRisks(classVarNameConstExpr);
 	}
 
 	protected AnalysisResult analyzeObjectFieldExpr(PTAObjectFieldExpr objectFieldExpr)
