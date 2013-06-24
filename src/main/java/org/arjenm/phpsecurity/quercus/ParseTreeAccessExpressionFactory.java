@@ -398,4 +398,10 @@ public class ParseTreeAccessExpressionFactory extends ExprFactory
 	{
 		return new PTAClassDefStatement(loc, cl);
 	}
+
+	@Override
+	public ClassVarNameConstExpr createClassConst(String className, Expr name)
+	{
+		return new PTAClassVarNameConstExpr(className, name);
+	}
 }

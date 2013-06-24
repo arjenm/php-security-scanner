@@ -293,6 +293,11 @@ public class DeclarationUsageCollector
 		addUsage(classMethodVarExpr.getClassName() + CLASS_POSTFIX);
 	}
 
+	public void addUsage(PTAClassVarNameConstExpr classVarNameConstExpr)
+	{
+		addUsage(classVarNameConstExpr.getClassName() + CLASS_POSTFIX);
+	}
+
 	private void addUsage(String declaredName)
 	{
 		String searchName = declaredName.toLowerCase();
@@ -343,5 +348,4 @@ public class DeclarationUsageCollector
 			log.info("Found unused declaration: " + declaration);
 		}
 	}
-
 }
