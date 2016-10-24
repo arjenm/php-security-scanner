@@ -1,3 +1,8 @@
+## DEPRECATED
+
+Note: Since Caucho's Quercus doesn't understand newer php-versions (i.e. 5.5 and up), this project is also deprecated.
+
+
 ## INTRODUCTION
 
 The php-bug-scanner is a relatively simple set of classes that leverages Caucho's PHP-engine, Quercus,
